@@ -9,12 +9,18 @@ from newspaper import Article
 import os
 
 SEARCH_ENGINE_ID = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_ID')
-API_KEY = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_API_KEY')
+#API_KEY = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_API_KEY')
+SEARCH_ENGINE_ID = "a0999913925dd4eca"
+API_KEY = "AIzaSyCVHviPTcwR2qmwHqsprMZGNBl8XjgDW8k"
 
 def get_search_results(query):
+    print(f"API_KEY = {API_KEY}")
+    print(f"SEARCH_ENGINE_ID = {SEARCH_ENGINE_ID}")
+    print(f"query = {query}")
     url = f"https://www.googleapis.com/customsearch/v1?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&num=3"
     response = requests.get(url)
     data = response.json()
+    print(data)
     return data['items']
 
 def get_page_content(url):
