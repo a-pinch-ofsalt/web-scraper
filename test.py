@@ -6,11 +6,10 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urljoin
 from newspaper import Article
+import os
 
-
-API_KEY = 'AIzaSyD-kvDePLDKBwXuQYnziuoGrB8iYtP5UDg'
-SEARCH_ENGINE_ID = 'a0999913925dd4eca'
-query = 'meta llama grant'
+SEARCH_ENGINE_ID = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_ID')
+API_KEY = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_API_KEY')
 
 def get_search_results(query):
     url = f"https://www.googleapis.com/customsearch/v1?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&num=3"
