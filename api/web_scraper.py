@@ -17,24 +17,6 @@ def get_search_results(query):
     data = response.json()
     return data['items']
 
-results = get_search_results(query)
-for item in results:
-    print(item['link'])
-"""
-def crawl(url):
-    if url in visited_urls:
-        return
-    visited_urls.add(url)
-
-    html_content = get_page_content(url)
-    processed_text, links = process_content(html_content, url)
-    webpage_contents.append({'link': url, 'content': processed_text})
-
-    for link in links:
-        if link.startswith('http') and link not in visited_urls:
-            crawl(link)
-"""
-    
 def get_page_content(url):
     options = Options()
     options.add_argument('--headless')  # Run in headless mode
@@ -104,7 +86,9 @@ def write_all_webpage_contents_to_txt(webpage_contents, file_name, delimiter="\n
 def research_shallow(query):
     search_results = get_search_results(query)
     results_content = get_results_content(search_results)
-    write_all_webpage_contents_to_txt(results_content, query + ' research.txt')
+    #write_all_webpage_contents_to_txt(results_content, query + ' research.txt')
+    return '\n\n\n\n'.join(results_content)
+    
      
 
 def get_results_content(search_results):
@@ -116,5 +100,4 @@ def get_results_content(search_results):
         results_content.append(processed_text)
         
     return results_content
-        
-research_shallow('pythagorean theorem')
+
