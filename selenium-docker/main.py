@@ -7,42 +7,43 @@ from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urljoin
 import os
 
-SEARCH_ENGINE_ID = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_ID')
+#SEARCH_ENGINE_ID = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_ID')
 #API_KEY = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_API_KEY')
 SEARCH_ENGINE_ID = "a0999913925dd4eca"
 API_KEY = "AIzaSyCVHviPTcwR2qmwHqsprMZGNBl8XjgDW8k"
 
 def get_search_results(query):
-    print(f"API_KEY = {API_KEY}")
-    print(f"SEARCH_ENGINE_ID = {SEARCH_ENGINE_ID}")
-    print(f"query = {query}")
     url = f"https://www.googleapis.com/customsearch/v1?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}&num=3"
     response = requests.get(url)
     data = response.json()
-    print(data)
     return data['items']
 
 def get_page_content(url):
-    options = Options()
-    options.add_argument('--headless')  # Run in headless mode
-    options.add_argument('--no-sandbox')  # Bypass OS security model
-    options.add_argument('--disable-dev-shm-usage')  # Overcome limited resource problems
-    options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1920x1080')
-    options.add_argument('--disable-extensions')
-    options.add_argument('--start-maximized')
-    options.add_argument('--disable-infobars')
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')  # Use /tmp instead of /dev/shm
+    chrome_options.add_argument('--remote-debugging-port=9222')  # Debugging port to avoid errors
+    chrome_options.add_argument('--disable-gpu')  # Disable GPU to avoid issues in headless mode
+    chrome_options.add_argument('--disable-software-rasterizer')  # Disable software rasterizer to avoid crashes
+    chrome_options.add_argument('--window-size=1280x1696')
 
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    chrome_options.add_argument('--data-path=/tmp/data-path')
+    chrome_options.add_argument('--homedir=/tmp')
+    chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
+    # Set the binary location to the installed Chromium
+    chrome_options.binary_location = '/usr/bin/google-chrome'
 
+    # Initialize the WebDriver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+    # Your Selenium code here
     driver.get(url)
     content = driver.page_source
+
     driver.quit()
-    return {
-        'statusCode': 200,
-        'body': content
-    }
+
+    return content
 
 def process_content(html, base_url):
     soup = BeautifulSoup(html, 'html.parser')
@@ -108,12 +109,19 @@ def get_results_content(search_results):
         
     return results_content
 
-def handler(event, context):
+def lambda_handler(event, context):
+    # Extract the query parameter from the event
     query = event.get('queryStringParameters', {}).get('query')
+    
+    # Log the query
+    print(f"Received query: {query}")
+    
+    # Use the research_shallow function to get the search result
     try:
+        result = research_shallow(query)
         return {
             'statusCode': 200,
-            'body': research_shallow(query)
+            'body': result
         }
     except Exception as e:
         return {
