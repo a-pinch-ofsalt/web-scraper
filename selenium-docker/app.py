@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urljoin
-from newspaper import Article
 import os
 
 SEARCH_ENGINE_ID = os.getenv('GOOGLE_CUSTOM_SEARCH_ENGINE_ID')
@@ -33,7 +32,6 @@ def get_page_content(url):
     options.add_argument('--disable-extensions')
     options.add_argument('--start-maximized')
     options.add_argument('--disable-infobars')
-    options.binary_location = '/usr/bin/google-chrome'
 
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
@@ -41,7 +39,10 @@ def get_page_content(url):
     driver.get(url)
     content = driver.page_source
     driver.quit()
-    return content
+    return {
+        'statusCode': 200,
+        'body': content
+    }
 
 def process_content(html, base_url):
     soup = BeautifulSoup(html, 'html.parser')
@@ -107,3 +108,18 @@ def get_results_content(search_results):
         
     return results_content
 
+def handler(event, context):
+    query = event.get('queryStringParameters', {}).get('query')
+    try:
+        return {
+            'statusCode': 200,
+            'body': research_shallow(query)
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': str(e)
+        }
+
+
+#Useless modification so Docker thinks I updated it
